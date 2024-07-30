@@ -15,8 +15,6 @@ function Home() {
       <div className='home-data'>
         <h1 className='quiz-name'>Mind Battle</h1>
         <p className='description'>Embark on a journey of knowledge exploration with our Extensive collection of interactive Quizzes</p>
-
-        
         <Link to="/Quiz">
         <button 
           className='start-button' 
