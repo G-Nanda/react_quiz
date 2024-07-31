@@ -1,121 +1,3 @@
-// import React from "react";
-// import {useState,useEffect} from "react";
-
-// export default function Quiz(){
-//     const [questions,setQuestions]=useState([])
-//     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-//     const [error, setError] = useState(null);
-//     const [loading, setLoading] = useState(true);
-
-//     fetch("https://opentdb.com/api.php?amount=5&category=9&difficulty=medium&type=multiple")
-//     .then(res=> {res.json()})
-
-//     .then(loadedquestions=> {console.log(loadedquestions.resuts)})
-
-//     .catch(err=>{console.error(err)})
-
-//     useEffect(()=>{
-//     fetch("https://opentdb.com/api.php?amount=5&category=9&difficulty=medium&type=multiple")
-//     .then(response => response.json)
-//     .then(data=>{console.log(data.results);
-//       setQuestions(data.results)})
-//     },[])
-//     useEffect(() => {
-//         const fetchQuestions = async () => {
-//           try {
-//             const response = await fetch("https://opentdb.com/api.php?amount=5&category=9&difficulty=medium&type=multiple");
-//             if (!response.ok) {
-//               throw new Error(`HTTP error! status: ${response.status}`);
-//             }
-//             const data = await response.json();
-//             if (data.results) {
-//               setQuestions(data.results);
-//             }
-//           } catch (error) {
-//             setError(error);
-//             console.error("Error fetching the quiz data:", error);
-//           } finally {
-//             setLoading(false);
-//           }
-//         };
-    
-//         fetchQuestions();
-//       }, []);
-//     return(
-//         <div>{questions[0]}</div>
-//     )
-// }
-
-// 
-
-// import React from 'react'
-// import "./App.css";
-
-// const Quiz = () => {
-//   return (
-//     <div className='quiz'>
-//       <div className='design-top'></div>
-//       <div className='question-block'>
-//         <h3 className='question'>How would one say good bye in spanish</h3>
-//         <div className='options'>
-//           <button className='optionlist'>option1</button>
-//           <button className='optionlist'>option2</button>
-//           <button className='optionlist'>option3</button>
-//           <button className='optionlist'>option4</button>
-//         </div>
-//       </div>
-//       <br/>
-//       <div className='question-block'>
-//         <h3 className='question'>How would one say good bye in spanish</h3>
-//         <div className='options'>
-//           <button className='optionlist'>option1</button>
-//           <button className='optionlist'>option2</button>
-//           <button className='optionlist'>option3</button>
-//           <button className='optionlist'>option4</button>
-//         </div>
-//       </div>
-//       <br></br>
-//       <div className='question-block'>
-//         <h3 className='question'>How would one say good bye in spanish</h3>
-//         <div className='options'>
-//           <button className='optionlist'>option1</button>
-//           <button className='optionlist'>option2</button>
-//           <button className='optionlist'>option3</button>
-//           <button className='optionlist'>option4</button>
-//         </div>
-//       </div>
-//       <br></br>
-//       <div className='question-block'>
-//         <h3 className='question'>How would one say good bye in spanish</h3>
-//         <div className='options'>
-//           <button className='optionlist'>option1</button>
-//           <button className='optionlist'>option2</button>
-//           <button className='optionlist'>option3</button>
-//           <button className='optionlist'>option4</button>
-//         </div>
-//       </div>
-//       <br></br>
-//       <div className='question-block'>
-//         <h3 className='question'>How would one say good bye in spanish</h3>
-//         <div className='options'>
-//           <button className='optionlist'>option1</button>
-//           <button className='optionlist'>option2</button>
-//           <button className='optionlist'>option3</button>
-//           <button className='optionlist'>option4</button>
-//         </div>
-//       </div>
-      
-//       <button className='result'>Check answers</button>
-     
-      
-//     </div>
-//   )
-// }
-
-// export default Quiz
-
-// 
-
 import React, { useState, useEffect } from 'react';
 import Confetti from 'react-confetti';
 import './App.css';
@@ -127,6 +9,7 @@ const Quiz = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [confetti, setConfetti] = useState(false);
+  const [score, setScore] = useState(0); // State to track score
 
   // Function to fetch questions
   const fetchQuestions = async () => {
@@ -139,9 +22,14 @@ const Quiz = () => {
       }
       const data = await response.json();
       if (data.results) {
-        setQuestions(data.results);
+        const questionsWithShuffledOptions = data.results.map((q) => ({
+          ...q,
+          options: shuffleArray([...q.incorrect_answers, q.correct_answer]),
+        }));
+        setQuestions(questionsWithShuffledOptions);
         setSelectedOptions(Array(data.results.length).fill(null));
         setConfetti(false); // Reset confetti
+        setScore(0); // Reset score
       }
     } catch (error) {
       setError(error);
@@ -162,9 +50,15 @@ const Quiz = () => {
   };
 
   const checkAnswers = () => {
+    let newScore = 0;
+    questions.forEach((q, index) => {
+      if (selectedOptions[index] === q.correct_answer) {
+        newScore += 1;
+      }
+    });
+    setScore(newScore);
     setShowResults(true);
-    const allCorrect = questions.every((q, index) => selectedOptions[index] === q.correct_answer);
-    if (allCorrect) {
+    if (newScore === questions.length) {
       setConfetti(true); // Trigger confetti effect
     }
   };
@@ -188,19 +82,24 @@ const Quiz = () => {
     return '';
   };
 
-  // Function to determine button size based on option length
-  const getButtonStyle = (option) => {
-    const baseWidth = 120; // Base width
-    const baseHeight = 40; // Base height
-    const padding = 10; // Padding around text
-    const maxWidth = 200; // Max width
+  // const getButtonStyle = (option) => {
+  //   const baseWidth = 120; // Base width
+  //   const baseHeight = 45; // Base height
+  //   const padding = 10; // Padding around text
+  //   const maxWidth = 200; // Max width
 
-    // Calculate width based on text length, up to maxWidth
-    const textWidth = Math.min(option.length * 10, maxWidth - padding * 2);
-    const width = Math.max(baseWidth, textWidth + padding * 2);
-    const height = baseHeight;
+  //   // Calculate width based on text length, up to maxWidth
+  //   const textWidth = Math.min(option.length * 10, maxWidth - padding * 2);
+  //   const width = Math.max(baseWidth, textWidth + padding * 2);
+  //   const height = baseHeight;
 
-    return { width: `${width}px`, height: `${height}px` };
+  //   return { width: `${width}px`, height: `${height}px` };
+  // };
+
+  const decodeHtml = (html) => {
+    const txt = document.createElement('textarea');
+    txt.innerHTML = html;
+    return txt.value;
   };
 
   if (loading) {
@@ -217,35 +116,45 @@ const Quiz = () => {
       <div className='design-top'></div>
       {questions.map((q, index) => (
         <div key={index} className='question-block'>
-          <h3 className='question'>{`Question ${index + 1}: ${q.question}`}</h3>
+          <h3 className='question'>{`Question ${index + 1}:  ${decodeHtml(q.question)}`}</h3>
           <div className='options'>
-            {shuffleArray([...q.incorrect_answers, q.correct_answer]).map((option, i) => (
+            {q.options.map((option, i) => (
               <button
                 key={i}
                 className={`optionlist ${getOptionClass(index, option)}`}
                 onClick={() => handleOptionClick(index, option)}
-                style={getButtonStyle(option)} // Apply dynamic styles
+                // style={getButtonStyle(option)} // Apply dynamic styles
                 disabled={showResults} // Disable option buttons after showing results
               >
-                {option}
+                {decodeHtml(option)}
               </button>
             ))}
+            <br></br>
           </div>
           {showResults && (
             <p className='result-message'>
-              {selectedOptions[index] === q.correct_answer ? 'Correct!' : `Wrong! The correct answer is ${q.correct_answer}.`}
+              {selectedOptions[index] === q.correct_answer ? 'Correct!' : `Wrong! The correct answer is ${decodeHtml(q.correct_answer)}.`}
             </p>
           )}
         </div>
       ))}
-      <button className='result' onClick={checkAnswers}>
-        Check Answers
-      </button>
-      {showResults && (
-        <button className='result' onClick={resetQuiz}>
-          Reset Quiz
+
+      {!showResults && (
+        <button className='result' onClick={checkAnswers}>
+          Check Answers
         </button>
       )}
+
+      {showResults && (
+        <>
+          <p className='score'>You scored {score} out of {questions.length}!</p>
+          <button className='result' onClick={resetQuiz}>
+            Play Again
+          </button>
+        </>
+      )}
+
+      <div className='design-bottom'></div>
     </div>
   );
 };
@@ -256,3 +165,8 @@ const shuffleArray = (array) => {
 };
 
 export default Quiz;
+
+
+
+
+

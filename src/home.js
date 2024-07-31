@@ -11,7 +11,7 @@ function Home() {
   
   return (
     <div className='home'>
-      <div className='design-top'></div>
+      <div className='design-top1'></div>
       <div className='home-data'>
         <h1 className='quiz-name'>Mind Battle</h1>
         <p className='description'>Embark on a journey of knowledge exploration with our Extensive collection of interactive Quizzes</p>
@@ -24,7 +24,7 @@ function Home() {
         </Link>
          
       </div>
-      <div className='design-bottom'></div>
+      <div className='design-bottom1'></div>
     </div>
     
   )
